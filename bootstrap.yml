@@ -7,6 +7,7 @@
       - resolutecoder
       - de1987
       - thom-at-redhat
+      - omaciel
   tasks:
     - name: Ensure user accounts are added
       ansible.builtin.user:

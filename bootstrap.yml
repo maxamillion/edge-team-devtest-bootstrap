@@ -9,9 +9,19 @@
       - thom-at-redhat
       - omaciel
   tasks:
+    - name: Allow 'wheel' group to have passwordless sudo
+      ansible.builtin.lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
     - name: Ensure user accounts are added
       ansible.builtin.user:
         name: "{{ item }}"
+        groups: wheel
+        append: true
       loop: "{{ ansible_edge_users }}"
 
     - name: Ensure ssh dir for each user
@@ -32,4 +42,21 @@
         group: "{{ item }}"
       loop: "{{ ansible_edge_users }}"
 
-# vim: set filetype=yaml.ansible
+    - name: Install packages needed for virtualization
+      ansible.builtin.dnf:
+        name:
+          - libvirt-daemon
+          - libvirt-client
+          - "@headless-management"
+
+    - name: Start services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      loop:
+        - libvirtd.service
+        - cockpit.socket
+
+
+# vim: set ft=yaml.ansible

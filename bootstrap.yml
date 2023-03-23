@@ -1,0 +1,30 @@
+- name: Bootstrap devtest system for Ansible Edge Team
+  hosts: all
+  vars:
+    ansible_edge_users:
+      - maxamillion
+      - matoval
+      - resolutecoder
+      - de1987
+      - thom-at-redhat
+  tasks:
+    - name: Ensure user accounts are added
+      ansible.builtin.user:
+        name: "{{ item }}"
+      loop: "{{ ansible_edge_users }}"
+
+    - name: Ensure ssh dir for each user
+      ansible.builtin.file:
+        path: "/home/{{ item }}/.ssh/"
+        mode: 0744
+        state: directory
+      loop: "{{ ansible_edge_users }}"
+
+    - name: Add ssh keys for each user
+      ansible.builtin.get_url:
+        url: "https://github.com/{{ item }}.keys"
+        dest: "/home/{{ item }}/.ssh/authorized_keys"
+        mode: 0600
+      loop: "{{ ansible_edge_users }}"
+
+# vim: set filetype=yaml.ansible

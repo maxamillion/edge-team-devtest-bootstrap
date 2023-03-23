@@ -1,5 +1,5 @@
 - name: Bootstrap devtest system for Ansible Edge Team
-  hosts: all
+  hosts: devtest
   vars:
     ansible_edge_users:
       - maxamillion
@@ -16,15 +16,19 @@
     - name: Ensure ssh dir for each user
       ansible.builtin.file:
         path: "/home/{{ item }}/.ssh/"
-        mode: 0744
+        mode: 0700
         state: directory
+        owner: "{{ item }}"
+        group: "{{ item }}"
       loop: "{{ ansible_edge_users }}"
 
     - name: Add ssh keys for each user
       ansible.builtin.get_url:
         url: "https://github.com/{{ item }}.keys"
         dest: "/home/{{ item }}/.ssh/authorized_keys"
+        owner: "{{ item }}"
         mode: 0600
+        group: "{{ item }}"
       loop: "{{ ansible_edge_users }}"
 
 # vim: set filetype=yaml.ansible
